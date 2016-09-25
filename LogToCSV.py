@@ -2,13 +2,13 @@ import csv
 import time
 import os
 
-columns = {"cid","fid", "pth", "ref", "sttp", "uri", "uuid", "us", "ts", "ip", "r", "cuuid", "ae", "ancestors", "from", "mid", "mnis", "sid", "ti", "path", "action", "cnt", "dewey", "drop", "cf", "lmap", "mnid", "pid", "ua"}
+columns = {"fid", "ref", "sttp", "uri", "ts", "ip", "ancestors", "mid", "ti", "ua"}
 
 
 os.chdir('..')
 starttime = time.time()
 print('starttime: %d' %starttime)
-with open('Data/scratch_2016_06_17_kavula.log.txt','r') as fin:
+with open('desktop/data/data.log','r') as fin:
 
     # reader = csv.reader(fin)
     reader = fin.readlines()
