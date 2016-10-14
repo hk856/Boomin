@@ -8,7 +8,7 @@ columns = {"fid", "ref", "sttp", "uri", "ts", "ip", "ancestors", "mid", "ti", "u
 os.chdir('..')
 starttime = time.time()
 print('starttime: %d' %starttime)
-with open('Data/scratch_2016_06_17_kavula.log.txt','r') as fin:
+with open('Desktop/data/data.log','r') as fin:
 
     reader = fin.readlines()
 

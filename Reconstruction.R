@@ -2,7 +2,7 @@ library(dplyr)
 library(reshape)
 library(ggplot2)
 
-setwd("/Users/Heng/Documents/CornellWork/MPS_Project/GIT")
+setwd("/Users/Tony")
 list.files()
 
 theDataset <- read.csv(file = "data.csv", header = TRUE, sep = ",")
