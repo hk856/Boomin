@@ -27,3 +27,7 @@ sbDataset$rt <- append(0,(sbDataset[2:noItems,]$ts - sbDataset[1:(noItems-1),]$t
 sbDataset[changeIndex,]$rt <- rep(0,length(changeIndex))
 newSessions <-  which(sbDataset$rt >= threshold)
 sbDataset[changeIndex,]$rt <- rep(0,length(newSessions))
+
+# explort the file 
+
+write.csv(sbDataset, file = "orderedScrooge.csv")
