@@ -2,7 +2,11 @@ library(dplyr)
 library(reshape)
 library(ggplot2)
 
+
+setwd("/Users/Tony")
+
 setwd("/Users/Heng/Documents/CornellWork/MPS_Project/GIT")
+
 
 list.files()
 
