@@ -12,7 +12,6 @@ list.files()
 
 ptm <- proc.time()
 theDataset <- read.csv(file = "data.csv", header = TRUE, sep = "," )
-proc.time() - ptm
 
 
 validUsers <- filter(theDataset, uuid != "", ua != "")
