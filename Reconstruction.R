@@ -13,7 +13,9 @@ theDataset <- read.csv(file = "data1.csv", header = TRUE, sep = "," , stringAsFa
 
 validUsers <- filter(theDataset, uuid != "", ua != "")
 validUsers <- validUsers[order(validUsers$ip,validUsers$uuid,validUsers$ts),]
-#singleUser <- filter(theDataset,uuid == "34589c40d81bc8bd6c9ca0ebe0795d0d")
+singleUser2 <- filter(theDataset,uuid == "3cb1d0ea664017c2edfa9c4624965106")
+
+validUsers <- head(validUsers, 500)
 mytable <- table(validUsers$uuid)
 
 #which.max(mytable)
