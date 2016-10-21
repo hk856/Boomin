@@ -10,41 +10,53 @@ setwd("/Users/Heng/Documents/CornellWork/MPS_Project/GIT")
 
 list.files()
 
-ptm <- proc.time()
+
 theDataset <- read.csv(file = "data.csv", header = TRUE, sep = "," )
 
 
 validUsers <- filter(theDataset, uuid != "", ua != "")
 byUuid <- group_by(validUsers, uuid)
-filteredUsers <- filter(byUuid, n()<60)
+filteredUsers <- filter(byUuid, n()<40)
 
 filteredUsers <- filteredUsers[order(filteredUsers$uuid,filteredUsers$ts),]
-# singleUser2 <- filter(theDataset,uuid == "3cb1d0ea664017c2edfa9c4624965106")
 
+
+singleUser2 <- filter(validUsers,uuid == "1141dc836b73b8279207296550f6b342")
 # validUsers <- head(validUsers, 100)
-# mytable <- table(validUsers$uuid)
-# validUsers <- cbind(id = c(1:length(validUsers[,1])), validUsers)
+mytable <- table(filteredUsers$uuid)
 #which.max(mytable)
 # names(which.max(table(validUsers$uuid)))
 # names(mytable>60)
-# freqDF = as.data.frame(mytable)
-# colnames(freqDF)=c("uuid2","freq")
+freqDF = as.data.frame(mytable)
 
+colnames(freqDF)=c("uuid","freq")
+freqDF = filter(freqDF,uuid != "",freq!=0)
 
+idCol = rep(0, length(filteredUsers$uuid))
+rowCount = 0
+for (i in 1:length(freqDF$freq)){
+  idCol[(rowCount+1) : (rowCount + freqDF$freq[i])] <- c(1:freqDF$freq[i])
+  rowCount = rowCount + freqDF$freq[i]
+}
+filteredUsers <- as.data.frame(filteredUsers)
+filteredUsers <- cbind(id = idCol, filteredUsers)
 
 #plot(mytable)
 #quantile(mytable, c(.25, .50, .95))
 # df=as.data.frame(mytable)
 # uuidCount = length(df[,1])
 
-
-valuePair = cbind(uuid = filteredUsers$uuid, sttp = filteredUsers$sttp, ts = filteredUsers$ts)
+ptm <- proc.time()
+filteredUsers1000 <- filteredUsers
+valuePair = cbind(id = filteredUsers1000$id, uuid = filteredUsers1000$uuid, sttp = filteredUsers1000$sttp, ts = filteredUsers1000$ts)
 #valuePair = t(valuePair)
 colnames(valuePair)
 df = as.data.frame(valuePair)
-casted <- dcast(df,  ts ~ uuid, value.var = "sttp", na.rm = TRUE)
+casted <- dcast(df,  id ~ uuid, value.var = "sttp", na.rm = TRUE)
 write.csv(casted, file = "testData.csv")
 proc.time() - ptm
+
+
 # actionTable <- matrix(rep(0),nrow = 43,ncol = uuidCount)
 # for (i in 1:length(validUsers[,1])){
 #   #if uuid exists in actionTable
