@@ -1,8 +1,9 @@
+library(gtools)
+
 # import and manipulate the dataset
 
 theDataset <- read.csv(file = "newData10.csv", header = TRUE, sep = ",")
-theDataset <- cbind(theDataset,rep(0,length(theDataset[,1])))
-colnames(theDataset)[31:32] <- c("rt")
+theDataset <- cbind(theDataset,"rt"=rep(0,length(theDataset[,1])))
 
 # order the dataset according to the uuid and when it is missing use the ip.
 
@@ -15,6 +16,7 @@ ipDataset2 <- ipDataset[mixedorder(ipDataset$ip),]
 sbDataset[noUuid,] <- ipDataset2
 sbDataset[noUuid,]$uuid <- sbDataset[noUuid,]$ip
 
+sbDataset = theDataset
 # define the time threshold after which a new session is starting
 threshold <- 600 
 
