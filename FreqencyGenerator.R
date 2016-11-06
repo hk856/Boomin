@@ -17,13 +17,13 @@ temp6 <- data.frame(grepl(pattern = "custom_range", theDataset$uri, ignore.case 
 temp7 <- data.frame(grepl(pattern = "keyphrase", theDataset$uri, ignore.case = T))
 
 theDataset <- cbind(theDataset,temp1,temp2,temp3,temp4,temp5,temp6,temp7) # used filter functi
-colnames(theDataset)[12] <- "filtered"
-colnames(theDataset)[13] <- "radio"
-colnames(theDataset)[14] <- "checkBox"
-colnames(theDataset)[15] <- "priceRange"
-colnames(theDataset)[16] <- "orderBy"
-colnames(theDataset)[17] <- "customRange"
-colnames(theDataset)[18] <- "search"
+colnames(theDataset)[13] <- "filtered"
+colnames(theDataset)[14] <- "radio"
+colnames(theDataset)[15] <- "checkBox"
+colnames(theDataset)[16] <- "priceRange"
+colnames(theDataset)[17] <- "orderBy"
+colnames(theDataset)[18] <- "customRange"
+colnames(theDataset)[19] <- "search"
 
 
 #filter users. Only keep those have uuid and ua
@@ -53,18 +53,20 @@ filteredUsers <- cbind(id = idCol, filteredUsers)
 
 #take some valuable columns out of the dataframe and cbind them into a new dataframe
 valuePair = cbind(id = filteredUsers$id, uuid = filteredUsers$uuid, 
-                  sttp = filteredUsers$sttp, ts = filteredUsers$ts,
+                  sttp = filteredUsers$sttp, ts = filteredUsers$ts, cid = filteredUsers$cid,
                   platform = filteredUsers$ua, filtered = filteredUsers$filtered, 
                   radio = filteredUsers$radio, checkBox = filteredUsers$checkBox, 
                   priceRange = filteredUsers$priceRange, orderBy = filteredUsers$orderBy, 
                   custom_range = filteredUsers$customRange, search = filteredUsers$search)
 df = as.data.frame(valuePair)
 #cast the dataframe
-m <- matrix(0, ncol = 12, nrow = length(freqDF[,1]))
+m <- matrix(0, ncol = 22, nrow = length(freqDF[,1]))
 output = data.frame(m)
 
-colnames(output) <- c("uuid","num_actions","sttp10","browsing_time","platform",
-                      "num_filter","num_radio_f","num_checkBox_f",
+colnames(output) <- c("uuid","num_actions","sttp10","browsing_time",
+                      "cid40","cid379","cid407","cid579","cid427","cid12", 
+                      "cid1105","cid25","cid334","cid790",
+                      "platform","num_filter","num_radio_f","num_checkBox_f",
                       "num_priceRange_f","num_orderBy_f",
                       "num_custom_range","num_search")
 
@@ -143,4 +145,20 @@ casted <- t(casted)
 casted <- casted[2:l,]
 output$num_search <- unname(apply(casted, 1, function(x) length(which(x==TRUE))))
 
+#number of cid(to catagories)
+casted <- dcast(df,  id ~ uuid, value.var = "cid")
+casted <- t(casted)
+casted <- casted[2:l,]
+output$cid40 <- unname(apply(casted, 1, function(x) length(which(x=='40'))))
+output$cid379 <- unname(apply(casted, 1, function(x) length(which(x=='379'))))
+output$cid407 <- unname(apply(casted, 1, function(x) length(which(x=='407'))))
+output$cid579 <- unname(apply(casted, 1, function(x) length(which(x=='579'))))
+output$cid427 <- unname(apply(casted, 1, function(x) length(which(x=='427'))))
+output$cid12 <- unname(apply(casted, 1, function(x) length(which(x=='12'))))
+output$cid1105 <- unname(apply(casted, 1, function(x) length(which(x=='1105'))))
+output$cid25 <- unname(apply(casted, 1, function(x) length(which(x=='25'))))
+output$cid334 <- unname(apply(casted, 1, function(x) length(which(x=='334'))))
+output$cid790 <- unname(apply(casted, 1, function(x) length(which(x=='790'))))
+
 write.csv(output, file = "functionAggregation.csv")
+

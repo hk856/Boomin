@@ -2,17 +2,17 @@ import csv
 import time
 import os
 
-columns = {"fid", "ref", "sttp", "uri", "ts", "ip", "ancestors", "mid", "ti", "ua", "uuid"}
+columns = {"fid", "ref", "sttp", "uri", "ts", "ip", "ancestors", "mid", "ti", "ua", "uuid","cid"}
 
 
 os.chdir('..')
 starttime = time.time()
 print('starttime: %d' %starttime)
-with open('Desktop/data/top500.txt','r') as fin:
+with open('Data/scratch_2016_06_17_kavula.log.txt','r') as fin:
 
     reader = fin.readlines()
 
-    with open('data1.csv','w') as output:
+    with open('data.csv','w') as output:
         dict_writer = csv.DictWriter(output, columns, extrasaction='ignore')
         dict_writer.writeheader()
         for item in reader:
