@@ -18,7 +18,7 @@ sbDataset[noUuid,]$uuid <- sbDataset[noUuid,]$ip
 
 sbDataset = theDataset
 # define the time threshold after which a new session is starting
-threshold <- 600 
+threshold <- 600
 
 # calculate the reaction time
 
