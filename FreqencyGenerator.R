@@ -7,7 +7,7 @@ setwd("/Users/Heng/Documents/CornellWork/MPS_Project/GIT")
 setwd("/Users/Tony")
 
 #read csv
-theDataset <- read.csv(file = "data1.csv", header = TRUE, sep = "," )
+theDataset <- read.csv(file = "data.csv", header = TRUE, sep = "," )
 
 temp1 <- data.frame(grepl(pattern = "/f/|/m/|price_min|price_max|custom_range|order_by", theDataset$uri, ignore.case = T))
 temp2 <- data.frame(grepl(pattern = "/f/", theDataset$uri, ignore.case = T))
