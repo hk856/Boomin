@@ -32,6 +32,7 @@ mean(aggregatedDataset$browsing_time)
 
 
 # create table to reflect userage of top 10 categories
+setwd("/Users/Tony")
 functionAggregation <- read.csv(file = "functionAggregation.csv", header = TRUE, sep = "," )
 
 t40 <- filter(functionAggregation, functionAggregation$cid40 >0)
@@ -45,7 +46,7 @@ t25 <- filter(functionAggregation, functionAggregation$cid25>0)
 t334 <- filter(functionAggregation, functionAggregation$cid334>0)
 t790 <- filter(functionAggregation, functionAggregation$cid790>0)
 
-#shineing package
+#shiny package
 
 mobile_phone <- c('count'=nrow(t40), 'avg_browsing_time' = mean(t40$browsing_time),'avg_num_actions'=mean(t40$num_actions), 'avg_sttp10'=mean(t40$sttp10), 'avg_num_search'=mean(t40$num_search), 'avg_num_filter'=mean(t40$num_filter))
 sneaker <- c('count'=nrow(t379),'avg_browsing_time' = mean(t379$browsing_time),'avg_num_actions'=mean(t379$num_actions), 'avg_sttp10'=mean(t379$sttp10), 'avg_num_search'=mean(t379$num_search), 'avg_num_filter'=mean(t379$num_filter))
