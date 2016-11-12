@@ -36,11 +36,6 @@ cidTop1010Pie <- select(cidTop1010, n)
 cidTop1010Pie
 piepercent<- round(100*cidTop10Pie/sum(cidTop10Pie), 1)
 
-counts <- table(mtcars$vs, mtcars$gear)
-barplot(cidTop1010, main="Car Distribution by Gears and VS",
-        xlab="Number of Gears", col=c("darkblue","red"),
-        legend = rownames(counts), beside=TRUE)
-
 barData <- data.frame(lbls,cidTop10Pie,lbls10,cidTop1010Pie)
 
 barData
