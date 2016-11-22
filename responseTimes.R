@@ -28,7 +28,13 @@ changeIndex <- changeIndex + 1
 sbDataset$rt <- append(0,(sbDataset[2:noItems,]$ts - sbDataset[1:(noItems-1),]$ts))
 sbDataset[changeIndex,]$rt <- rep(0,length(changeIndex))
 newSessions <-  which(sbDataset$rt >= threshold)
-sbDataset[changeIndex,]$rt <- rep(0,length(newSessions))
+sbDataset[newSessions,]$rt <- rep(0,length(newSessions))
+
+threshold=10
+newSessions <-  which(sbDataset$rt >= threshold)
+newSessions
+
+sbDataset$ts
 
 # explort the file 
 

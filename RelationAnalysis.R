@@ -12,8 +12,23 @@ aggregatedDataset$num_priceRange_f <- NULL
 aggregatedDataset$num_orderBy_f <- NULL
 aggregatedDataset$num_custom_range <- NULL
 
+
+mydata = cbind(num_action = aggregatedDataset$num_actions,
+               browsing_time = aggregatedDataset$browsing_time,
+               sttp10 = aggregatedDataset$sttp10,
+               num_filter = aggregatedDataset$num_filter,
+               num_search = aggregatedDataset$num_search)
+
+# Determine number of clusters
+wss <- (nrow(mydata)-1)*sum(apply(mydata,2,var))
+for (i in 2:15) wss[i] <- sum(kmeans(mydata, 
+                                     centers=i)$withinss)
+plot(1:15, wss, type="b", xlab="Number of Clusters",
+     ylab="Within groups sum of squares")
+
 fit <- kmeans(aggregatedDataset,2)
 aggregatedDataset <- cbind(aggregatedDataset, fit$cluster)
+
 
 
 
@@ -54,8 +69,8 @@ t790 <- filter(functionAggregation, functionAggregation$cid790>0)
 
 
 #shiny package
-windowShopper <- c('count'=nrow(windowShopper), 'avg_browsing_time' = mean(windowShopper$browsing_time),'avg_num_actions'=mean(windowShopper$num_actions), 'avg_sttp10'=mean(windowShopper$sttp10), 'avg_num_search'=mean(windowShopper$num_search), 'avg_num_filter'=mean(windowShopper$num_filter))
-hasteUser <- c('count'=nrow(hasteUser), 'avg_browsing_time' = mean(hasteUser$browsing_time),'avg_num_actions'=mean(hasteUser$num_actions), 'avg_sttp10'=mean(hasteUser$sttp10), 'avg_num_search'=mean(hasteUser$num_search), 'avg_num_filter'=mean(hasteUser$num_filter))
+WINDOW_SHOPPER <- c('count'=nrow(windowShopper), 'action_rate'=(mean(windowShopper$browsing_time)/mean(windowShopper$num_actions)), 'click_rate'=(mean(windowShopper$browsing_time)/mean(windowShopper$sttp10)),   'avg_browsing_time' = mean(windowShopper$browsing_time),'avg_num_actions'=mean(windowShopper$num_actions), 'avg_sttp10'=mean(windowShopper$sttp10), 'avg_num_search'=mean(windowShopper$num_search), 'avg_num_filter'=mean(windowShopper$num_filter))
+HASTE_SHOPPER <- c('count'=nrow(hasteUser), 'action_rate'=(mean(hasteUser$browsing_time)/mean(hasteUser$num_actions)), 'click_rate'=(mean(hasteUser$browsing_time)/mean(hasteUser$sttp10)),'avg_browsing_time' = mean(hasteUser$browsing_time),'avg_num_actions'=mean(hasteUser$num_actions), 'avg_sttp10'=mean(hasteUser$sttp10), 'avg_num_search'=mean(hasteUser$num_search), 'avg_num_filter'=mean(hasteUser$num_filter))
 mobile_phone <- c('count'=nrow(t40), 'avg_browsing_time' = mean(t40$browsing_time),'avg_num_actions'=mean(t40$num_actions), 'avg_sttp10'=mean(t40$sttp10), 'avg_num_search'=mean(t40$num_search), 'avg_num_filter'=mean(t40$num_filter))
 sneaker <- c('count'=nrow(t379),'avg_browsing_time' = mean(t379$browsing_time),'avg_num_actions'=mean(t379$num_actions), 'avg_sttp10'=mean(t379$sttp10), 'avg_num_search'=mean(t379$num_search), 'avg_num_filter'=mean(t379$num_filter))
 AC <- c('count'=nrow(t407),'avg_browsing_time' = mean(t407$browsing_time),'avg_num_actions'=mean(t407$num_actions), 'avg_sttp10'=mean(t407$sttp10), 'avg_num_search'=mean(t407$num_search), 'avg_num_filter'=mean(t407$num_filter))
@@ -67,5 +82,5 @@ laptop <- c('count'=nrow(t25),'avg_browsing_time' = mean(t25$browsing_time),'avg
 watch <- c('count'=nrow(t334),'avg_browsing_time' = mean(t334$browsing_time),'avg_num_actions'=mean(t334$num_actions), 'avg_sttp10'=mean(t334$sttp10), 'avg_num_search'=mean(t334$num_search), 'avg_num_filter'=mean(t334$num_filter))
 sunglass <- c('count'=nrow(t790),'avg_browsing_time' = mean(t790$browsing_time),'avg_num_actions'=mean(t790$num_actions), 'avg_sttp10'=mean(t790$sttp10), 'avg_num_search'=mean(t790$num_search), 'avg_num_filter'=mean(t790$num_filter))
 
-top10result <- rbind(mobile_phone,sneaker,AC,phone_case,electronic_fan,TV,multimedia,laptop,watch,sunglass)
-
+top10result <- rbind(mobile_phone,sneaker,AC,phone_case,electronic_fan,TV,multimedia,laptop,watch,sunglass,WINDOW_SHOPPER,HASTE_SHOPPER)
+test <- rbind(WINDOW_SHOPPER,HASTE_SHOPPER)
