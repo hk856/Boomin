@@ -27,8 +27,11 @@ colnames(theDataset)[18] <- "customRange"
 colnames(theDataset)[19] <- "search"
 
 
-#filter users. Only keep those have uuid and ua
+#filter users. Only keep pc users and mobile users who are not using apps
 filteredUsers <- filter(theDataset, uuid != "", ua != "")
+filteredUsers[grep("ios", filteredUsers$uri), "platform"] <- "ios"
+filteredUsers[grep("android", filteredUsers$uri), "platform"] <- "android"
+filteredUsers = filter(filteredUsers, is.na(platform))
 #group by uuid and keep those users who has less than 40 actions
 byUuid <- group_by(filteredUsers, uuid)
 filteredUsers <- filter(byUuid, n()<40)
