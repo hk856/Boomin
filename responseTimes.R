@@ -2,9 +2,9 @@ library(gtools)
 
 # import and manipulate the dataset
 
-theDataset <- read.csv(file = "newData10.csv", header = TRUE, sep = ",")
+theDataset <- read.csv(file = "Data.csv", header = TRUE, sep = ",")
 theDataset <- cbind(theDataset,"rt"=rep(0,length(theDataset[,1])))
-
+theDataset <- theDataset[order(theDataset$uuid,theDataset$ts),]
 # order the dataset according to the uuid and when it is missing use the ip.
 
 theDataset$uuid <- as.character(theDataset$uuid)
@@ -28,7 +28,7 @@ changeIndex <- changeIndex + 1
 sbDataset$rt <- append(0,(sbDataset[2:noItems,]$ts - sbDataset[1:(noItems-1),]$ts))
 sbDataset[changeIndex,]$rt <- rep(0,length(changeIndex))
 newSessions <-  which(sbDataset$rt >= threshold)
-sbDataset[changeIndex,]$rt <- rep(0,length(newSessions))
+sbDataset[newSessions,]$rt <- rep(0,length(newSessions))
 
 # explort the file 
 
