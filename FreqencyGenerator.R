@@ -32,6 +32,7 @@ filteredUsers <- filter(theDataset, uuid != "", ua != "")
 filteredUsers[grep("ios", filteredUsers$uri), "platform"] <- "ios"
 filteredUsers[grep("android", filteredUsers$uri), "platform"] <- "android"
 filteredUsers = filter(filteredUsers, is.na(platform))
+filteredUsers$platform = NULL
 #group by uuid and keep those users who has less than 40 actions
 byUuid <- group_by(filteredUsers, uuid)
 filteredUsers <- filter(byUuid, n()<40)
