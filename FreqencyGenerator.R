@@ -1,14 +1,36 @@
 library(dplyr)
 library(reshape)
 library(ggplot2)
+library(gtools)
 library(reshape2)
 
-setwd("/Users/Heng/Documents/CornellWork/MPS_Project/GIT")
+#setwd("/Users/Heng/Documents/CornellWork/MPS_Project/GIT")
+
+# import and manipulate the dataset
 setwd("/Users/Tony")
+theDataset <- read.csv(file = "data.csv", header = TRUE, sep = ",")
+theDataset <- cbind(theDataset,"rt"=rep(0,length(theDataset[,1])))
+theDataset <- theDataset[order(theDataset$uuid,theDataset$ts),]
+sbDataset = theDataset
+#sbDataset <- filter(theDataset,theDataset$uuid!="")
+# order the dataset according to the uuid and when it is missing use the ip.
+threshold <- 600
 
-#read csv
-theDataset <- read.csv(file = "data.csv", header = TRUE, sep = "," )
+# calculate the reaction time
 
+noItems <- length(sbDataset[,1])
+changeIndex <- which(sbDataset[2:noItems,]$uuid != sbDataset[1:(noItems - 1),]$uuid)
+changeIndex <- changeIndex + 1
+sbDataset$rt <- append(0,(sbDataset[2:noItems,]$ts - sbDataset[1:(noItems-1),]$ts))
+sbDataset[changeIndex,]$rt <- rep(0,length(changeIndex))
+newSessions <-  which(sbDataset$rt >= threshold)
+sbDataset[newSessions,]$rt <- rep(0,length(newSessions))
+
+
+# explort the file 
+write.csv(sbDataset, file = "responseTime.csv")
+
+# add actions into the table
 temp1 <- data.frame(grepl(pattern = "/f/|/m/|price_min|price_max|custom_range|order_by", theDataset$uri, ignore.case = T))
 temp2 <- data.frame(grepl(pattern = "/f/", theDataset$uri, ignore.case = T))
 temp3 <- data.frame(grepl(pattern = "/m/", theDataset$uri, ignore.case = T))
@@ -17,21 +39,28 @@ temp5 <- data.frame(grepl(pattern = "order_by", theDataset$uri, ignore.case = T)
 temp6 <- data.frame(grepl(pattern = "custom_range", theDataset$uri, ignore.case = T))
 temp7 <- data.frame(grepl(pattern = "keyphrase", theDataset$uri, ignore.case = T))
 
-theDataset <- cbind(theDataset,temp1,temp2,temp3,temp4,temp5,temp6,temp7) # used filter functi
-colnames(theDataset)[13] <- "filtered"
-colnames(theDataset)[14] <- "radio"
-colnames(theDataset)[15] <- "checkBox"
-colnames(theDataset)[16] <- "priceRange"
-colnames(theDataset)[17] <- "orderBy"
-colnames(theDataset)[18] <- "customRange"
-colnames(theDataset)[19] <- "search"
+subDataset <- cbind(sbDataset,temp1,temp2,temp3,temp4,temp5,temp6,temp7) # used filter functi
+colnames(subDataset)[14] <- "filtered"
+colnames(subDataset)[15] <- "radio"
+colnames(subDataset)[16] <- "checkBox"
+colnames(subDataset)[17] <- "priceRange"
+colnames(subDataset)[18] <- "orderBy"
+colnames(subDataset)[19] <- "customRange"
+colnames(subDataset)[20] <- "search"
 
 
-#filter users. Only keep those have uuid and ua
-filteredUsers <- filter(theDataset, uuid != "", ua != "")
+
+
+
+#filter users. Only keep pc users and mobile users who are not using apps
+filteredUsers <- filter(subDataset, uuid != "", ua != "")
+filteredUsers[grep("ios", filteredUsers$uri), "platform"] <- "ios"
+filteredUsers[grep("android", filteredUsers$uri), "platform"] <- "android"
+filteredUsers = filter(filteredUsers, is.na(platform))
+filteredUsers$platform = NULL
 #group by uuid and keep those users who has less than 40 actions
 byUuid <- group_by(filteredUsers, uuid)
-filteredUsers <- filter(byUuid, n()<40)
+filteredUsers <- filter(byUuid, n()<100)
 
 #order the dataframe by uuid and time stamp
 filteredUsers <- filteredUsers[order(filteredUsers$uuid,filteredUsers$ts),]
@@ -53,18 +82,18 @@ filteredUsers <- as.data.frame(filteredUsers)
 filteredUsers <- cbind(id = idCol, filteredUsers)
 
 #take some valuable columns out of the dataframe and cbind them into a new dataframe
-valuePair = cbind(id = filteredUsers$id, uuid = filteredUsers$uuid, 
-                  sttp = filteredUsers$sttp, ts = filteredUsers$ts, cid = filteredUsers$cid,
-                  platform = filteredUsers$ua, filtered = filteredUsers$filtered, 
-                  radio = filteredUsers$radio, checkBox = filteredUsers$checkBox, 
-                  priceRange = filteredUsers$priceRange, orderBy = filteredUsers$orderBy, 
-                  custom_range = filteredUsers$customRange, search = filteredUsers$search)
+valuePair = cbind('id' = filteredUsers$id, 'uuid' = filteredUsers$uuid, 
+                  'sttp' = filteredUsers$sttp, 'ts' = filteredUsers$ts, 'cid' = filteredUsers$cid,
+                  'platform' = filteredUsers$ua, 'filtered' = filteredUsers$filtered, 
+                  'radio' = filteredUsers$radio, 'checkBox' = filteredUsers$checkBox, 
+                  'priceRange' = filteredUsers$priceRange, 'orderBy' = filteredUsers$orderBy, 
+                  'custom_range' = filteredUsers$customRange, 'search' = filteredUsers$search, 'rt'=filteredUsers$rt)
 df = as.data.frame(valuePair)
 #cast the dataframe
-m <- matrix(0, ncol = 22, nrow = length(freqDF[,1]))
+m <- matrix(0, ncol = 23, nrow = length(freqDF[,1]))
 output = data.frame(m)
 
-colnames(output) <- c("uuid","num_actions","sttp10","browsing_time",
+colnames(output) <- c("uuid","total_num_actions","total_sttp10","avg_browsing_time","total_visits",
                       "cid40","cid379","cid407","cid579","cid427","cid12", 
                       "cid1105","cid25","cid334","cid790",
                       "platform","num_filter","num_radio_f","num_checkBox_f",
@@ -74,23 +103,27 @@ colnames(output) <- c("uuid","num_actions","sttp10","browsing_time",
 #fill the uuid column in output
 output$uuid <- freqDF$uuid
 
+# fill the number of visit
+casted <- dcast(df, id~uuid, value.var = "rt")
+casted <- t(casted)
+l <- length(casted[,1])
+casted <- casted[2:l,]
+output$total_visits <- unname(apply(casted,1,function(x) length(which(x=='0') )))
+
+
+# fill the browsing time
+output$avg_browsing_time <- unname(apply(casted,1,function(x){
+ time <- sum(x,na.rm = TRUE)/length(which(x=='0'))
+  return (round(time, digits = 8))
+}))
+
 #fill the sttp column in output
 casted <- dcast(df,  id ~ uuid, value.var = "sttp")
 casted <- t(casted)
 l <- length(casted[,1])
 casted <- casted[2:l,]
-output$num_actions <- unname(apply(casted, 1, function(x) length(which(!is.na(x)))))
-output$sttp10 <- unname(apply(casted, 1, function(x) length(which(x==10))))
-
-#fill the browsing time
-casted <- dcast(df,  id ~ uuid, value.var = "ts")
-casted <- t(casted)
-casted <- casted[2:l,]
-output$browsing_time <- unname(apply(casted, 1, function(x){
-  NonNAindex <- which(!is.na(x))
-  lastNonNA <- max(NonNAindex)
-  return(x[lastNonNA]-x[1])
-}))
+output$total_num_actions <- unname(apply(casted, 1, function(x) length(which(!is.na(x)))))
+output$total_sttp10 <- unname(apply(casted, 1, function(x) length(which(x==10))))
 
 #platform
 casted <- dcast(df,  id ~ uuid, value.var = "platform")
@@ -161,5 +194,5 @@ output$cid25 <- unname(apply(casted, 1, function(x) length(which(x=='25'))))
 output$cid334 <- unname(apply(casted, 1, function(x) length(which(x=='334'))))
 output$cid790 <- unname(apply(casted, 1, function(x) length(which(x=='790'))))
 
-write.csv(output, file = "functionAggregation.csv")
 
+write.csv(output, file = "functionAggregation.csv")

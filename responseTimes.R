@@ -1,22 +1,23 @@
 library(gtools)
 
 # import and manipulate the dataset
-
-theDataset <- read.csv(file = "newData10.csv", header = TRUE, sep = ",")
+setwd("/Users/Tony")
+theDataset <- read.csv(file = "data.csv", header = TRUE, sep = ",")
 theDataset <- cbind(theDataset,"rt"=rep(0,length(theDataset[,1])))
-
+theDataset <- theDataset[order(theDataset$uuid,theDataset$ts),]
+sbDataset <- filter(theDataset,theDataset$uuid!="")
 # order the dataset according to the uuid and when it is missing use the ip.
 
-theDataset$uuid <- as.character(theDataset$uuid)
-theDataset$ip <- as.character(theDataset$ip)
-sbDataset <- theDataset[mixedorder(theDataset$uuid),]
-noUuid <- which(sbDataset$uuid == "")
-ipDataset <- sbDataset[noUuid,]
-ipDataset2 <- ipDataset[mixedorder(ipDataset$ip),]
-sbDataset[noUuid,] <- ipDataset2
-sbDataset[noUuid,]$uuid <- sbDataset[noUuid,]$ip
+#theDataset$uuid <- as.character(theDataset$uuid)
+#theDataset$ip <- as.character(theDataset$ip)
+#sbDataset <- theDataset[mixedorder(theDataset$uuid),]
+#noUuid <- which(sbDataset$uuid == "")
+#ipDataset <- sbDataset[noUuid,]
+#ipDataset2 <- ipDataset[mixedorder(ipDataset$ip),]
+#sbDataset[noUuid,] <- ipDataset2
+#sbDataset[noUuid,]$uuid <- sbDataset[noUuid,]$ip
 
-sbDataset = theDataset
+#sbDataset = theDataset
 # define the time threshold after which a new session is starting
 threshold <- 600
 
@@ -30,11 +31,6 @@ sbDataset[changeIndex,]$rt <- rep(0,length(changeIndex))
 newSessions <-  which(sbDataset$rt >= threshold)
 sbDataset[newSessions,]$rt <- rep(0,length(newSessions))
 
-threshold=10
-newSessions <-  which(sbDataset$rt >= threshold)
-newSessions
-
-sbDataset$ts
 
 # explort the file 
 
