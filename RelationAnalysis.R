@@ -82,7 +82,7 @@ count <- nrow(windowShopper)
 avg_browsing_time <- mean(windowShopper$avg_browsing_time, na.rm = TRUE)
 avg_visits <- mean(windowShopper$total_visits)
 avg_num_actions <- mean(windowShopper$total_num_actions) / mean(windowShopper$total_visits)
-action_rate <-avg_browsing_time / avg_num_action
+action_rate <-avg_browsing_time / avg_num_actions
 avg_sttp10 <- mean(windowShopper$total_sttp10) / mean(windowShopper$total_visits)
 avg_num_search <- mean(windowShopper$num_search)
 avg_num_filter <- mean(windowShopper$num_filter)
@@ -93,7 +93,7 @@ count <- nrow(hasteUser)
 avg_browsing_time <- mean(hasteUser$avg_browsing_time, na.rm = TRUE)
 avg_visits <- mean(hasteUser$total_visits)
 avg_num_actions <- mean(hasteUser$total_num_actions) / mean(hasteUser$total_visits)
-action_rate <-avg_browsing_time / avg_num_action
+action_rate <-avg_browsing_time / avg_num_actions
 avg_sttp10 <- mean(hasteUser$total_sttp10) / mean(hasteUser$total_visits)
 avg_num_search <- mean(hasteUser$num_search)
 avg_num_filter <- mean(hasteUser$num_filter)
