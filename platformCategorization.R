@@ -1,3 +1,6 @@
+#cannot merge with FrequencyGenerator because app can only be calculated using ip
+#not uuid
+
 library(dplyr)
 library(reshape)
 library(ggplot2)
@@ -7,6 +10,26 @@ setwd("F:/Personal/Grad School/MPS project/GIT/Data")
 
 #read csv
 theDataset <- read.csv(file = "data.csv", header = TRUE, sep = "," )
+theDataset <- cbind(theDataset,"rt"=rep(0,length(theDataset[,1])))
+theDataset <- theDataset[order(theDataset$uuid,theDataset$ts),]
+sbDataset = theDataset
+
+# order the dataset according to the uuid and when it is missing use the ip.
+threshold <- 600
+
+# calculate the reaction time
+
+noItems <- length(sbDataset[,1])
+changeIndex <- which(sbDataset[2:noItems,]$uuid != sbDataset[1:(noItems - 1),]$uuid)
+changeIndex <- changeIndex + 1
+sbDataset$rt <- append(0,(sbDataset[2:noItems,]$ts - sbDataset[1:(noItems-1),]$ts))
+sbDataset[changeIndex,]$rt <- rep(0,length(changeIndex))
+newSessions <-  which(sbDataset$rt >= threshold)
+sbDataset[newSessions,]$rt <- rep(0,length(newSessions))
+
+
+# explort the file 
+write.csv(sbDataset, file = "responseTime.csv")
 
 temp1 <- data.frame(grepl(pattern = "/f/|/m/|price_min|price_max|custom_range|order_by", theDataset$uri, ignore.case = T))
 temp2 <- data.frame(grepl(pattern = "/f/", theDataset$uri, ignore.case = T))
@@ -16,16 +39,16 @@ temp5 <- data.frame(grepl(pattern = "order_by", theDataset$uri, ignore.case = T)
 temp6 <- data.frame(grepl(pattern = "custom_range", theDataset$uri, ignore.case = T))
 temp7 <- data.frame(grepl(pattern = "keyphrase", theDataset$uri, ignore.case = T))
 
-theDataset <- cbind(theDataset,temp1,temp2,temp3,temp4,temp5,temp6,temp7) # used filter functi
-colnames(theDataset)[12] <- "filtered"
-colnames(theDataset)[13] <- "radio"
-colnames(theDataset)[14] <- "checkBox"
-colnames(theDataset)[15] <- "priceRange"
-colnames(theDataset)[16] <- "orderBy"
-colnames(theDataset)[17] <- "customRange"
-colnames(theDataset)[18] <- "search"
+subDataset <- cbind(sbDataset,temp1,temp2,temp3,temp4,temp5,temp6,temp7) # used filter functi
+colnames(subDataset)[14] <- "filtered"
+colnames(subDataset)[15] <- "radio"
+colnames(subDataset)[16] <- "checkBox"
+colnames(subDataset)[17] <- "priceRange"
+colnames(subDataset)[18] <- "orderBy"
+colnames(subDataset)[19] <- "customRange"
+colnames(subDataset)[20] <- "search"
 
-platformCate = theDataset
+platformCate = subDataset
 
 #general case
 #mark app user in original dataset
@@ -39,11 +62,15 @@ platformCate$phone = mapply(grepl, pattern = "phone", x = platformCate$ua, ignor
 
 #none-app user
 noneAppUser = filter(platformCate,exist_in_ua == FALSE, exist_in_uri == FALSE,
-                     sttp != "800", sttp != "1066", 
                      uuid != "", ua != "")
 
 noneAppByUuid <- group_by(noneAppUser, uuid)
-noneAppUser <- filter(noneAppByUuid, n()<40)
+noneAppUser <- filter(noneAppByUuid, n()<100)
+
+#mark operating system in none-app user
+noneAppUser$ios = mapply(grepl, pattern = "Mac|OS", x = noneAppUser$ua, ignore.case = FALSE)
+noneAppUser$android = mapply(grepl, pattern = "Android", x = noneAppUser$ua, ignore.case =FALSE)
+#otherplatform = filter(noneAppUser, mobile == TRUE | phone == TRUE, ios == FALSE, android == FALSE)
 
 #order the dataframe by uuid and time stamp
 noneAppUser <- noneAppUser[order(noneAppUser$uuid,noneAppUser$ts),]
@@ -65,27 +92,43 @@ noneAppUser <- as.data.frame(noneAppUser)
 noneAppUser <- cbind(id = idCol, noneAppUser)
 
 #take some valuable columns out of the dataframe and cbind them into a new dataframe
-noneAppValuePair = cbind(id = noneAppUser$id, uuid = noneAppUser$uuid, 
-                    sttp = noneAppUser$sttp, ts = noneAppUser$ts,
-                    platform = noneAppUser$ua, filtered = noneAppUser$filtered, 
-                    radio = noneAppUser$radio, checkBox = noneAppUser$checkBox, 
-                    priceRange = noneAppUser$priceRange, orderBy = noneAppUser$orderBy, 
-                    custom_range = noneAppUser$customRange, search = noneAppUser$search,
-                    mobile = noneAppUser$mobile, phone = noneAppUser$phone)
+noneAppValuePair = cbind('id' = noneAppUser$id, 'uuid' = noneAppUser$uuid, 
+                    'sttp' = noneAppUser$sttp, 'ts' = noneAppUser$ts,
+                    'cid' = noneAppUser$cid, 'filtered' = noneAppUser$filtered, 
+                    'radio' = noneAppUser$radio, 'checkBox' = noneAppUser$checkBox, 
+                    'priceRange' = noneAppUser$priceRange, 'orderBy' = noneAppUser$orderBy, 
+                    'custom_range' = noneAppUser$customRange, 'search' = noneAppUser$search,
+                    'mobile' = noneAppUser$mobile, 'phone' = noneAppUser$phone,
+                    'ios' = noneAppUser$ios, 'android' = noneAppUser$android,
+                    'rt' = noneAppUser$rt)
 df = as.data.frame(noneAppValuePair)
 
 #cast the dataframe
-m <- matrix(0, ncol = 13, nrow = length(noneAppFreqDF[,1]))
+m <- matrix(0, ncol = 16, nrow = length(noneAppFreqDF[,1]))
 noneAppOutput = data.frame(m)
 
 colnames(noneAppOutput) <- c("uuid","num_actions","sttp10","browsing_time",
                         "num_filter","num_radio_f","num_checkBox_f",
-                        "num_priceRange_f","num_orderBy_f",
+                        "num_priceRange_f","num_orderBy_f","total_visits",
                         "num_custom_range","num_search", 
-                        "is_mobile", "is_phone")
+                        "is_mobile", "is_phone", "is_ios", "is_android")
 
 #fill the uuid column for none-app user
 noneAppOutput$uuid <- noneAppFreqDF$uuid
+
+# fill the number of visit
+casted <- dcast(df, id~uuid, value.var = "rt")
+casted <- t(casted)
+l <- length(casted[,1])
+casted <- casted[2:l,]
+noneAppOutput$total_visits <- unname(apply(casted,1,function(x) length(which(x=='0') )))
+
+# fill the browsing time
+noneAppOutput$browsing_time <- unname(apply(casted,1,function(x){
+  time <- sum(x,na.rm = TRUE)/length(which(x=='0'))
+  return (round(time, digits = 8))
+}))
+
 
 #fill the sttp column for none-app user
 casted <- dcast(df,  id ~ uuid, value.var = "sttp")
@@ -95,16 +138,6 @@ casted <- casted[2:l,]
 noneAppOutput$num_actions <- unname(apply(casted, 1, function(x) length(which(!is.na(x)))))
 noneAppOutput$sttp10 <- unname(apply(casted, 1, function(x) length(which(x==10))))
 
-
-#fill the browsing time for none-app user
-casted <- dcast(df,  id ~ uuid, value.var = "ts")
-casted <- t(casted)
-casted <- casted[2:l,]
-noneAppOutput$browsing_time <- unname(apply(casted, 1, function(x){
-  NonNAindex <- which(!is.na(x))
-  lastNonNA <- max(NonNAindex)
-  return(x[lastNonNA]-x[1])
-}))
 
 #number of filter
 casted <- dcast(df,  id ~ uuid, value.var = "filtered")
@@ -159,25 +192,31 @@ casted <- t(casted)
 casted <- casted[2:l,]
 noneAppOutput$is_phone <- unname(apply(casted, 1, function(x) length(which(x==TRUE))))
 
+#for mobile user, count if it's IOS or Android for 
+#future filtering out mobile user
+casted <- dcast(df,  id ~ uuid, value.var = "ios")
+casted <- t(casted)
+casted <- casted[2:l,]
+noneAppOutput$is_ios <- unname(apply(casted, 1, function(x) length(which(x==TRUE))))
+
+casted <- dcast(df,  id ~ uuid, value.var = "android")
+casted <- t(casted)
+casted <- casted[2:l,]
+noneAppOutput$is_android <- unname(apply(casted, 1, function(x) length(which(x==TRUE))))
+
 
 #PC
 #find pc user
 pcUser = filter(noneAppOutput, is_mobile == 0,
                 is_phone == 0)
 
-#find distinct PC user
-distinctPCUser = filter(noneAppUser, mobile == FALSE,
-                        phone == FALSE) 
-distinctPCUser = subset(distinctPCUser, !duplicated(ip))
-
-
 #Mobile
 #find mobile user
 mobileUser = filter(noneAppOutput, is_mobile > 0 | is_phone > 0)
-
-#find distinct mobile user
-distinctMobileUser = filter(noneAppUser, mobile == TRUE | phone == TRUE) 
-distinctMobileUser = subset(distinctMobileUser, !duplicated(ip))
+mobileUser_ios = filter(mobileUser, is_ios > 0, is_android == 0)
+mobileUser_android = filter(mobileUser, is_ios == 0, is_android > 0)
+mobileUser_other = filter(mobileUser, is_ios == 0, is_android == 0)
+mobileUser_noneiPhone = filter(mobileUser_ios, is_phone == 0)
 
 
 #app
@@ -186,9 +225,18 @@ appUser = filter(platformCate, exist_in_ua == TRUE | exist_in_uri == TRUE)
 appUser$android = mapply(grepl, pattern = "android", x = appUser$ua, ignore.case = TRUE)
 appUser$ios = mapply(grepl, pattern = "OS", x = appUser$ua, ignore.case = TRUE)
 
+# calculate the reaction time
+noItems <- length(appUser[,1])
+changeIndex <- which(appUser[2:noItems,]$ip != appUser[1:(noItems - 1),]$ip)
+changeIndex <- changeIndex + 1
+appUser$rt <- append(0,(appUser[2:noItems,]$ts - appUser[1:(noItems-1),]$ts))
+appUser[changeIndex,]$rt <- rep(0,length(changeIndex))
+newSessions <-  which(appUser$rt >= threshold)
+appUser[newSessions,]$rt <- rep(0,length(newSessions))
+
 
 appByip <- group_by(appUser, ip)
-appUser <- filter(appByip, n()<40)
+appUser <- filter(appByip, n()<100)
 
 #order the dataframe by ip and time stamp
 appUser <- appUser[order(appUser$ip,appUser$ts),]
@@ -210,20 +258,37 @@ appUser <- as.data.frame(appUser)
 appUser <- cbind(id = idCol, appUser)
 
 #take some valuable columns out of the dataframe and cbind them into a new dataframe
-appValuePair = cbind(id = appUser$id, sttp = appUser$sttp,
-                     ip = appUser$ip, ts = appUser$ts, 
-                     platform = appUser$ua, android = appUser$android,
-                     ios = appUser$ios)
+appValuePair = cbind('id' = appUser$id, 'sttp' = appUser$sttp,
+                     'ip' = appUser$ip, 'ts' = appUser$ts, 
+                     'platform' = appUser$ua, 'android' = appUser$android,
+                     'ios' = appUser$ios, 'rt' = appUser$rt)
 df = as.data.frame(appValuePair)
 
 #cast the dataframe
-m <- matrix(0, ncol = 7, nrow = length(appFreqDF[,1]))
+m <- matrix(0, ncol = 8, nrow = length(appFreqDF[,1]))
 appOutput = data.frame(m)
 
-colnames(appOutput) <- c("ip","num_actions","sttp10","browsing_time","platform", "is_android", "is_ios")
+colnames(appOutput) <- c("ip","num_actions","sttp10","browsing_time",
+                         "platform", "is_android", "is_ios", "total_visits")
 
 #fill the ip column for app user
 appOutput$ip <- appFreqDF$ip
+
+
+# fill the number of visit
+casted <- dcast(df, id ~ ip, value.var = "rt")
+casted <- t(casted)
+l <- length(casted[,1])
+casted <- casted[2:l,]
+appOutput$total_visits <- unname(apply(casted,1,function(x) length(which(x=='0') )))
+
+
+# fill the browsing time
+appOutput$browsing_time <- unname(apply(casted,1,function(x){
+  time <- sum(x,na.rm = TRUE)/length(which(x=='0'))
+  return (round(time, digits = 8))
+}))
+
 
 #fill the sttp column for app user
 casted <- dcast(df,  id ~ ip, value.var = "sttp")
@@ -232,16 +297,6 @@ l <- length(casted[,1])
 casted <- casted[2:l,]
 appOutput$num_actions <- unname(apply(casted, 1, function(x) length(which(!is.na(x)))))
 appOutput$sttp10 <- unname(apply(casted, 1, function(x) length(which(x==10))))
-
-#fill the browsing time for app user
-casted <- dcast(df,  id ~ ip, value.var = "ts")
-casted <- t(casted)
-casted <- casted[2:l,]
-appOutput$browsing_time <- unname(apply(casted, 1, function(x){
-  NonNAindex <- which(!is.na(x))
-  lastNonNA <- max(NonNAindex)
-  return(x[lastNonNA]-x[1])
-}))
 
 #fill the platform
 casted <- dcast(df,  id ~ ip, value.var = "platform")
@@ -278,45 +333,44 @@ iosUser = filter(appOutput, is_ios > 0, is_android == 0)
 androidUser = filter(appOutput, is_android > 0)
 
 #combine the result of four catogories 
-pc = c('num_session'= nrow(pcUser), 'distinct_users' = nrow(distinctPCUser), 
-       'avg_browsing_time' = mean(pcUser$browsing_time),
-       'browsing_time_per_action' = sum(pcUser$browsing_time)/ sum(pcUser$num_actions),
+pcUser$browsing_time[!is.finite(pcUser$browsing_time)] <- NA
+pc = c('count'= nrow(pcUser), 
+       'avg_browsing_time' = mean(pcUser$browsing_time, na.rm = TRUE),
+       'avg_visits'= mean(pcUser$total_visits),
        'avg_num_actions' = mean(pcUser$num_actions), 
        'avg_sttp10' = mean(pcUser$sttp10), 
-       'sttp10_per_action' = sum(pcUser$sttp10)/ sum(pcUser$num_actions),
        'avg_num_search' = mean(pcUser$num_search), 
        'avg_num_filter' = mean(pcUser$num_filter))
 
-Mobile_NoneApp = c('num_session'= nrow(mobileUser), 
-                   'distinct_users' = nrow(distinctMobileUser), 
-                   'avg_browsing_time' = mean(mobileUser$browsing_time),
-                   'browsing_time_per_action' = sum(mobileUser$browsing_time)/ sum(mobileUser$num_actions),
+mobileUser$browsing_time[!is.finite(mobileUser$browsing_time)] <- NA
+Mobile_NoneApp = c('count'= nrow(mobileUser), 
+                   'avg_browsing_time' = mean(mobileUser$browsing_time, na.rm = TRUE),
+                   'avg_visits' = mean(mobileUser$total_visits),
                    'avg_num_actions' = mean(mobileUser$num_actions), 
                    'avg_sttp10' = mean(mobileUser$sttp10), 
-                   'sttp10_per_action' = sum(mobileUser$sttp10)/ sum(mobileUser$num_actions),
                    'avg_num_search' = mean(mobileUser$num_search), 
                    'avg_num_filter' = mean(mobileUser$num_filter))
 
+androidUser$browsing_time[!is.finite(androidUser$browsing_time)] <- NA
+Android_App = c('count'= nrow(androidUser), 
+                'avg_browsing_time' = mean(androidUser$browsing_time, na.rm = TRUE),
+                'avg_visits' = mean(androidUser$total_visits),
+                'avg_num_actions' = mean(androidUser$num_actions), 
+                'avg_sttp10' = mean(androidUser$sttp10),  
+                'avg_num_search' = "N/A", 
+                'avg_num_filter' = "N/A")
 
-Android_App = c('num_session'= nrow(androidUser), 
-            'distinct_users' = nrow(androidUser), 
-            'avg_browsing_time' = mean(androidUser$browsing_time),
-            'browsing_time_per_action' = sum(androidUser$browsing_time)/ sum(androidUser$num_actions),
-            'avg_num_actions' = mean(androidUser$num_actions), 
-            'avg_sttp10' = mean(androidUser$sttp10),  
-            'sttp10_per_action' = sum(androidUser$sttp10)/ sum(androidUser$num_actions),
-            'avg_num_search' = "N/A", 
-            'avg_num_filter' = "N/A")
-
-IOS_App = c('num_session'= nrow(iosUser), 
-            'distinct_users' = nrow(iosUser), 
-            'avg_browsing_time' = mean(iosUser$browsing_time),
-            'browsing_time_per_action' = sum(iosUser$browsing_time)/ sum(iosUser$num_actions),
+iosUser$browsing_time[!is.finite(iosUser$browsing_time)] <- NA
+IOS_App = c('count'= nrow(iosUser), 
+            'avg_browsing_time' = mean(iosUser$browsing_time, na.rm = TRUE),
+            'avg_visits' = mean(iosUser$total_visits),
             'avg_num_actions' = mean(iosUser$num_actions), 
             'avg_sttp10' = mean(iosUser$sttp10), 
-            'sttp10_per_action' = sum(iosUser$sttp10)/ sum(iosUser$num_actions),
             'avg_num_search' = "N/A", 
             'avg_num_filter' = "N/A")
 
 platformResult = rbind(pc, Mobile_NoneApp, Android_App, IOS_App)
 
+
+
+#difference among groups and reasoning 
