@@ -7,7 +7,7 @@ library(reshape2)
 #setwd("/Users/Heng/Documents/CornellWork/MPS_Project/GIT")
 
 # import and manipulate the dataset
-setwd("/Users/Tony")
+setwd("F:/Personal/Grad School/MPS project/GIT/Data")
 theDataset <- read.csv(file = "data.csv", header = TRUE, sep = ",")
 theDataset <- cbind(theDataset,"rt"=rep(0,length(theDataset[,1])))
 theDataset <- theDataset[order(theDataset$uuid,theDataset$ts),]
@@ -50,17 +50,16 @@ colnames(subDataset)[20] <- "search"
 
 
 
-
-
 #filter users. Only keep pc users and mobile users who are not using apps
 filteredUsers <- filter(subDataset, uuid != "", ua != "")
 filteredUsers[grep("ios", filteredUsers$uri), "platform"] <- "ios"
 filteredUsers[grep("android", filteredUsers$uri), "platform"] <- "android"
 filteredUsers = filter(filteredUsers, is.na(platform))
 filteredUsers$platform = NULL
+
 #group by uuid and keep those users who has less than 40 actions
 byUuid <- group_by(filteredUsers, uuid)
-filteredUsers <- filter(byUuid, n()<100)
+filteredUsers <- filter(byUuid, n()<40)
 
 #order the dataframe by uuid and time stamp
 filteredUsers <- filteredUsers[order(filteredUsers$uuid,filteredUsers$ts),]

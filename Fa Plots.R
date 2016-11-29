@@ -6,10 +6,10 @@ library(stats4)
 library(splines)
 library(VGAM)
 
-setwd("/Users/ZW/Desktop/Courses/MPS Project/Data")
+setwd("F:/Personal/Grad School/MPS project/GIT/Data")
 
 #read csv
-theDataset <- read.csv(file = "data1.csv", header = TRUE, sep = "," )
+theDataset <- read.csv(file = "data.csv", header = TRUE, sep = "," )
 
 temp1 <- data.frame(grepl(pattern = "/f/|/m/|price_min|price_max|custom_range|order_by", theDataset$uri, ignore.case = T))
 temp2 <- data.frame(grepl(pattern = "/f/", theDataset$uri, ignore.case = T))

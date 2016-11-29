@@ -2,7 +2,7 @@
 
 
 onTheLeaf <- filter(theDataset,sttp == 11) # all browsing actions on a leaf 
-allPages <- length(grep("page", theDataset$uri, perl=TRUE, value=FALSE) # all actions where page was displayed
+allPages <- length(grep("page", theDataset$uri, perl=TRUE, value=FALSE)) # all actions where page was displayed
 
 page1 <- length(onTheLeaf[,1]) - allPages # the number of actions on the first page
 returnPage1 <- length(grep("page=1\\b", theDataset$uri, perl=TRUE, value=FALSE))
@@ -20,7 +20,6 @@ page10 <- length(grep("page=10\\b", theDataset$uri, perl=TRUE, value=FALSE))
 
 firstPages <- sum(returnPage1,page2,page3,page4,page5,page6,page7,page8,page9,page10)
 backPages <- length(grep("page", theDataset$uri, perl=TRUE, value=FALSE)) - firstPages
-)
 
 
 # bind everything together using a vector 
