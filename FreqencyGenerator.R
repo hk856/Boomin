@@ -90,10 +90,10 @@ valuePair = cbind('id' = filteredUsers$id, 'uuid' = filteredUsers$uuid,
                   'custom_range' = filteredUsers$customRange, 'search' = filteredUsers$search, 'rt'=filteredUsers$rt)
 df = as.data.frame(valuePair)
 #cast the dataframe
-m <- matrix(0, ncol = 23, nrow = length(freqDF[,1]))
+m <- matrix(0, ncol = 25, nrow = length(freqDF[,1]))
 output = data.frame(m)
 
-colnames(output) <- c("uuid","total_num_actions","total_sttp10","avg_browsing_time","total_visits",
+colnames(output) <- c("uuid","total_num_actions","total_sttp10","avg_num_actions", "avg_sttp10","avg_browsing_time","total_visits",
                       "cid40","cid379","cid407","cid579","cid427","cid12", 
                       "cid1105","cid25","cid334","cid790",
                       "platform","num_filter","num_radio_f","num_checkBox_f",
@@ -122,8 +122,15 @@ casted <- dcast(df,  id ~ uuid, value.var = "sttp")
 casted <- t(casted)
 l <- length(casted[,1])
 casted <- casted[2:l,]
-output$total_num_actions <- unname(apply(casted, 1, function(x) length(which(!is.na(x)))))
+output$total_num_actions <- unname(apply(casted, 1, function(x) {
+  temp <- length(which(!is.na(x))) 
+  return(temp)
+}))
 output$total_sttp10 <- unname(apply(casted, 1, function(x) length(which(x==10))))
+
+output$avg_num_actions <- round(output$total_num_actions / output$total_visits, digits=2)
+output$avg_sttp10 <- round(output$total_sttp10 / output$total_visits, digits = 1)
+
 
 #platform
 casted <- dcast(df,  id ~ uuid, value.var = "platform")

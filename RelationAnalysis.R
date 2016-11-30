@@ -40,8 +40,7 @@ fit$centers
 
 
 
-fit <- lm(aggregatedDataset$sttp10 ~ aggregatedDataset$browsing_time + aggregatedDataset$num_actions + aggregatedDataset$num_filter + aggregatedDataset$num_search)
-summary(fit) #show results
+
 
 #fit <- lm(aggregatedDataset$sttp10 ~ aggregatedDataset$browsing_time + aggregatedDataset$num_actions + aggregatedDataset$num_filter + aggregatedDataset$num_search)
 #summary(fit) #show results
@@ -51,8 +50,8 @@ length(aggregatedDataset[,1])
 aggregatedDataset$avg_browsing_time[!is.finite(aggregatedDataset$avg_browsing_time)] <- NA
 #yoochoose competition.
 names(aggregatedDataset)[names(aggregatedDataset) =='fit.cluster'] <- 'cluster' 
-windowShopper <- filter(aggregatedDataset, aggregatedDataset$cluster=='1')
-hasteUser <- filter(aggregatedDataset, aggregatedDataset$cluster=='2')
+windowShopper <- filter(aggregatedDataset, aggregatedDataset$cluster=='2')
+hasteUser <- filter(aggregatedDataset, aggregatedDataset$cluster=='1')
 
 mean(aggregatedDataset$total_num_actions)
 mean(aggregatedDataset$num_search)
@@ -84,7 +83,7 @@ avg_visits <- mean(windowShopper$total_visits)
 avg_num_actions <- mean(windowShopper$total_num_actions) / mean(windowShopper$total_visits)
 action_rate <-avg_browsing_time / avg_num_actions
 avg_sttp10 <- mean(windowShopper$total_sttp10) / mean(windowShopper$total_visits)
-avg_num_search <- mean(windowShopper$num_search)
+avg_num_search <- mean(windowShopper$num_search) 
 avg_num_filter <- mean(windowShopper$num_filter)
 WINDOW_SHOPPER <- c(count,avg_browsing_time,avg_visits,avg_num_actions,avg_sttp10,avg_num_search,avg_num_filter)
 
