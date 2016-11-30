@@ -1,4 +1,4 @@
-setwd("/Users/Heng/Documents/CornellWork/MPS_Project/GIT")
+setwd("F:/Personal/Grad School/MPS project/GIT/Data")
 
 #read csv
 aggregatedDataset <- read.csv(file = "functionAggregation.csv", header = TRUE, sep = "," )
@@ -111,5 +111,5 @@ laptop <- c('count'=nrow(t25),'avg_browsing_time' = mean(t25$avg_browsing_time, 
 watch <- c('count'=nrow(t334),'avg_browsing_time' = mean(t334$avg_browsing_time, na.rm = TRUE),'avg_visits'=mean(t334$total_visits),'avg_num_actions'=mean(t334$total_num_actions), 'avg_sttp10'=mean(t334$total_sttp10), 'avg_num_search'=mean(t334$num_search), 'avg_num_filter'=mean(t334$num_filter))
 sunglass <- c('count'=nrow(t790),'avg_browsing_time' = mean(t790$avg_browsing_time, na.rm = TRUE),'avg_visits'=mean(t790$total_visits),'avg_num_actions'=mean(t790$total_num_actions), 'avg_sttp10'=mean(t790$total_sttp10), 'avg_num_search'=mean(t790$num_search), 'avg_num_filter'=mean(t790$num_filter))
 
-top10result <- rbind(mobile_phone,sneaker,AC,phone_case,electronic_fan,TV,multimedia,laptop,watch,sunglass,WINDOW_SHOPPER,HASTE_SHOPPER)
+top10result <- rbind(mobile_phone,sneaker,AC,phone_case,electronic_fan,TV,multimedia,laptop,watch,sunglass,WINDOW_SHOPPER,HASTE_SHOPPER, platformResult)
 test <- rbind(WINDOW_SHOPPER,HASTE_SHOPPER)
