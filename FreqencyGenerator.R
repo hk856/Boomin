@@ -7,7 +7,7 @@ library(reshape2)
 #setwd("/Users/Heng/Documents/CornellWork/MPS_Project/GIT")
 
 # import and manipulate the dataset
-setwd("F:/Personal/Grad School/MPS project/GIT/Data")
+setwd("/Users/Tony")
 theDataset <- read.csv(file = "data.csv", header = TRUE, sep = ",")
 theDataset <- cbind(theDataset,"rt"=rep(0,length(theDataset[,1])))
 theDataset <- theDataset[order(theDataset$uuid,theDataset$ts),]
@@ -50,16 +50,17 @@ colnames(subDataset)[20] <- "search"
 
 
 
+
+
 #filter users. Only keep pc users and mobile users who are not using apps
 filteredUsers <- filter(subDataset, uuid != "", ua != "")
 filteredUsers[grep("ios", filteredUsers$uri), "platform"] <- "ios"
 filteredUsers[grep("android", filteredUsers$uri), "platform"] <- "android"
 filteredUsers = filter(filteredUsers, is.na(platform))
 filteredUsers$platform = NULL
-
 #group by uuid and keep those users who has less than 40 actions
 byUuid <- group_by(filteredUsers, uuid)
-filteredUsers <- filter(byUuid, n()<40)
+filteredUsers <- filter(byUuid, n()<100)
 
 #order the dataframe by uuid and time stamp
 filteredUsers <- filteredUsers[order(filteredUsers$uuid,filteredUsers$ts),]
@@ -184,6 +185,15 @@ casted <- dcast(df,  id ~ uuid, value.var = "search")
 casted <- t(casted)
 casted <- casted[2:l,]
 output$num_search <- unname(apply(casted, 1, function(x) length(which(x==TRUE))))
+
+output$num_filter <- round(output$num_filter / output$total_visits, digits=1)
+output$num_search <- round(output$num_search / output$total_visits, digits = 1)
+output$num_radio_f <- round(output$num_radio_f / output$total_visits, digits = 1)
+output$num_checkBox_f <- round(output$num_checkBox_f / output$total_visits, digits = 1)
+output$num_priceRange_f <- round(output$num_priceRange_f / output$total_visits, digits = 1)
+output$num_orderBy_f <- round(output$num_orderBy_f / output$total_visits, digits = 1)
+output$num_custom_range <- round(output$num_custom_range / output$total_visits, digits = 1)
+
 
 #number of cid(to catagories)
 casted <- dcast(df,  id ~ uuid, value.var = "cid")

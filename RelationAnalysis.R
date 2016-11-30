@@ -14,10 +14,10 @@ aggregatedDataset$num_custom_range <- NULL
 
 
 
-mydata = cbind(num_action = aggregatedDataset$total_num_actions,
+mydata = cbind(num_action = aggregatedDataset$avg_num_actions,
                browsing_time = aggregatedDataset$avg_browsing_time,
-               num_visit = aggregatedDataset$total_visits,
-               sttp10 = aggregatedDataset$total_sttp10,
+               num_visit = aggregatedDataset$avg_visits,
+               sttp10 = aggregatedDataset$avg_sttp10,
                num_filter = aggregatedDataset$num_filter,
                num_search = aggregatedDataset$num_search)
 
@@ -48,17 +48,20 @@ fit$centers
 length(aggregatedDataset[,1])
 
 aggregatedDataset$avg_browsing_time[!is.finite(aggregatedDataset$avg_browsing_time)] <- NA
+aggregatedDataset$avg_num_actions[!is.finite(aggregatedDataset$avg_num_actions)] <- NA
+aggregatedDataset$num_search[!is.finite(aggregatedDataset$num_search)] <- NA
+aggregatedDataset$num_filter[!is.finite(aggregatedDataset$num_filter)] <- NA
+aggregatedDataset$avg_sttp10[!is.finite(aggregatedDataset$avg_sttp10)] <- NA
+
 #yoochoose competition.
 names(aggregatedDataset)[names(aggregatedDataset) =='fit.cluster'] <- 'cluster' 
 windowShopper <- filter(aggregatedDataset, aggregatedDataset$cluster=='2')
 hasteUser <- filter(aggregatedDataset, aggregatedDataset$cluster=='1')
 
-mean(aggregatedDataset$total_num_actions)
-mean(aggregatedDataset$num_search)
-mean(aggregatedDataset$num_filter)
-mean(aggregatedDataset$total_sttp10)
-
-aggregatedDataset$avg_browsing_time[!is.finite(aggregatedDataset$avg_browsing_time)] <- NA
+mean(aggregatedDataset$avg_num_actions, na.rm = TRUE)
+mean(aggregatedDataset$num_search, na.rm = TRUE)
+mean(aggregatedDataset$num_filter, na.rm = TRUE)
+mean(aggregatedDataset$avg_sttp10, na.rm = TRUE)
 mean(aggregatedDataset$avg_browsing_time, na.rm = TRUE)
 
 
@@ -80,24 +83,27 @@ t790 <- filter(aggregatedDataset, aggregatedDataset$cid790>0)
 count <- nrow(windowShopper)
 avg_browsing_time <- mean(windowShopper$avg_browsing_time, na.rm = TRUE)
 avg_visits <- mean(windowShopper$total_visits)
-avg_num_actions <- mean(windowShopper$total_num_actions) / mean(windowShopper$total_visits)
-action_rate <-avg_browsing_time / avg_num_actions
-avg_sttp10 <- mean(windowShopper$total_sttp10) / mean(windowShopper$total_visits)
-avg_num_search <- mean(windowShopper$num_search) 
-avg_num_filter <- mean(windowShopper$num_filter)
-WINDOW_SHOPPER <- c(count,avg_browsing_time,avg_visits,avg_num_actions,avg_sttp10,avg_num_search,avg_num_filter)
+avg_num_actions <- mean(windowShopper$avg_num_actions, na.rm = TRUE) 
+action_rate <- avg_browsing_time / avg_num_actions
+avg_sttp10 <- mean(windowShopper$avg_sttp10, na.rm = TRUE) 
+avg_num_search <- mean(windowShopper$num_search, na.rm = TRUE) 
+avg_num_filter <- mean(windowShopper$num_filter, na.rm = TRUE)
+WINDOW_SHOPPER <- c("count"=count,"avg_response_time"=action_rate,"avg_browsing_time"=avg_browsing_time,"avg_visits"=avg_visits,"avg_num_actions"=avg_num_actions,"avg_sttp10"=avg_sttp10,"avg_num_search"=avg_num_search,"avg_num_filter"=avg_num_filter)
 
 #Haste Shopper
 count <- nrow(hasteUser)
 avg_browsing_time <- mean(hasteUser$avg_browsing_time, na.rm = TRUE)
 avg_visits <- mean(hasteUser$total_visits)
-avg_num_actions <- mean(hasteUser$total_num_actions) / mean(hasteUser$total_visits)
-action_rate <-avg_browsing_time / avg_num_actions
-avg_sttp10 <- mean(hasteUser$total_sttp10) / mean(hasteUser$total_visits)
-avg_num_search <- mean(hasteUser$num_search)
-avg_num_filter <- mean(hasteUser$num_filter)
-HASTE_SHOPPER <- c(count,avg_browsing_time,avg_visits,avg_num_actions,avg_sttp10,avg_num_search,avg_num_filter)
+avg_num_actions <- mean(hasteUser$avg_num_actions, na.rm = TRUE)
+action_rate <- avg_browsing_time / avg_num_actions
+avg_sttp10 <- mean(hasteUser$avg_sttp10, na.rm = TRUE)
+avg_num_search <- mean(hasteUser$num_search, na.rm = TRUE)
+avg_num_filter <- mean(hasteUser$num_filter, na.rm = TRUE)
+HASTE_SHOPPER <- c("count"=count,"avg_response_time"=action_rate,"avg_browsing_time"=avg_browsing_time,"avg_visits"=avg_visits,"avg_num_actions"=avg_num_actions,"avg_sttp10"=avg_sttp10,"avg_num_search"=avg_num_search,"avg_num_filter"=avg_num_filter)
 
+
+catUsers <- rbind(WINDOW_SHOPPER,HASTE_SHOPPER)
+write.csv(catUsers,file = "User_Cluster_Analysis.csv")
 
 
 mobile_phone <- c('count'=nrow(t40), 'avg_browsing_time' = mean(t40$avg_browsing_time, na.rm = TRUE),'avg_visits'=mean(t40$total_visits),'avg_num_actions'=mean(t40$total_num_actions), 'avg_sttp10'=mean(t40$total_sttp10), 'avg_num_search'=mean(t40$num_search), 'avg_num_filter'=mean(t40$num_filter))
@@ -111,5 +117,5 @@ laptop <- c('count'=nrow(t25),'avg_browsing_time' = mean(t25$avg_browsing_time, 
 watch <- c('count'=nrow(t334),'avg_browsing_time' = mean(t334$avg_browsing_time, na.rm = TRUE),'avg_visits'=mean(t334$total_visits),'avg_num_actions'=mean(t334$total_num_actions), 'avg_sttp10'=mean(t334$total_sttp10), 'avg_num_search'=mean(t334$num_search), 'avg_num_filter'=mean(t334$num_filter))
 sunglass <- c('count'=nrow(t790),'avg_browsing_time' = mean(t790$avg_browsing_time, na.rm = TRUE),'avg_visits'=mean(t790$total_visits),'avg_num_actions'=mean(t790$total_num_actions), 'avg_sttp10'=mean(t790$total_sttp10), 'avg_num_search'=mean(t790$num_search), 'avg_num_filter'=mean(t790$num_filter))
 
-top10result <- rbind(mobile_phone,sneaker,AC,phone_case,electronic_fan,TV,multimedia,laptop,watch,sunglass,WINDOW_SHOPPER,HASTE_SHOPPER, platformResult)
-test <- rbind(WINDOW_SHOPPER,HASTE_SHOPPER)
+top10result <- rbind(mobile_phone,sneaker,AC,phone_case,electronic_fan,TV,multimedia,laptop,watch,sunglass)
+write.csv(top10result, file = "Top10CategoryAnalysis")
